@@ -9,8 +9,8 @@ fun main() {
         val count = Array(input.size) { 1 }
         val cards = input.map(Card::from)
         for ((i, card) in cards.withIndex()) {
-            for (j in 1 .. card.numberOfMatching()) {
-                count[i+j] += count[i]
+            for (j in 1..card.numberOfMatching()) {
+                count[i + j] += count[i]
             }
         }
         return count.sum()
@@ -43,12 +43,15 @@ data class Card(
             return Card(
                 id = string.substring(5, string.indexOf(":")).trim().toInt(),
                 winningNumbers = with(string) {
-                    substring(indexOf(":") + 1, indexOf("|")).trim().replace("\\s+".toRegex(), " ").split(" ").map { it.toInt() }
+                    substring(indexOf(":") + 1, indexOf("|")).toIntegerList()
                 },
                 yourNumbers = with(string) {
-                    substring(indexOf("|") + 1).trim().replace("\\s+".toRegex(), " ").split(" ").map { it.toInt() }
+                    substring(indexOf("|") + 1).toIntegerList()
                 }
             )
         }
+
+        private fun String.toIntegerList(): List<Int> =
+            trim().replace("\\s+".toRegex(), " ").split(" ").map { it.toInt() }
     }
 }
