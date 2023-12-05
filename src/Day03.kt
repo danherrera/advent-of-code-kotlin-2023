@@ -1,15 +1,23 @@
-fun main() {
-    fun part1(grid: List<String>): Int {
+fun main() = Day3().run()
+
+class Day3 : Challenge<Int>(3) {
+    override val testResults = ExpectedTestInputResults(
+        part1 = 4361,
+        part2 = 467835,
+    )
+
+    override fun part1(grid: List<String>): Int {
         val width = grid.first().length
         val height = grid.size
 
         val partNumberCoordinates = mutableSetOf<Pair<Int, Int>>()
-        grid.forEachIndexed { r, row ->
-            row.forEachIndexed { c, char ->
+        for ((r, row) in grid.withIndex()) {
+            for ((c, char) in row.withIndex()) {
                 if (char !in '0'..'9' && char != '.') {
-                    moves.forEach { (dX, dY) ->
-                        val x = clamp(c + dX, 0, width - 1)
+                    for ((dY, dX) in moves) {
                         val y = clamp(r + dY, 0, height - 1)
+                        val x = clamp(c + dX, 0, width - 1)
+
                         if (grid[y][x] in '0'..'9') {
                             var t = x
                             while (t - 1 >= 0 && grid[y][t - 1] in '0'..'9') {
@@ -31,19 +39,19 @@ fun main() {
         return partNumbers.sum()
     }
 
-    fun part2(grid: List<String>): Int {
+    override fun part2(grid: List<String>): Int {
         val width = grid.first().length
         val height = grid.size
         var sum = 0
-        grid.forEachIndexed { r, row ->
-            row.forEachIndexed { c, char ->
+        for ((r, row) in grid.withIndex()) {
+            for ((c, char) in row.withIndex()) {
                 if (char == '*') {
                     val adjacentPartNumbers = mutableListOf<Int>()
                     val visited = mutableSetOf<Pair<Int, Int>>()
-                    moves.forEach { (dX, dY) ->
-                        val x = clamp(c + dX, 0, width - 1)
+                    for ((dY, dX) in moves) {
                         val y = clamp(r + dY, 0, height - 1)
-                        if (y to x in visited || grid[y][x] !in '0'..'9') return@forEach
+                        val x = clamp(c + dX, 0, width - 1)
+                        if (y to x in visited || grid[y][x] !in '0'..'9') continue
                         visited.add(y to x)
                         var t = x
                         while (t - 1 >= 0 && grid[y][t - 1] in '0'..'9') {
@@ -69,27 +77,20 @@ fun main() {
         return sum
     }
 
-    val testInput = readInput("Day03_test")
-    part1(testInput).println()
-    check(part1(testInput) == 4361)
-
-    val input = readInput("Day03")
-    part1(input).println()
-    part2(input).println()
 }
 
 val moves = listOf(
-        -1 to -1,
-        0 to -1,
-        1 to -1,
-        -1 to 0,
-        1 to 0,
-        -1 to 1,
-        0 to 1,
-        1 to 1,
+    -1 to -1,
+    0 to -1,
+    1 to -1,
+    -1 to 0,
+    1 to 0,
+    -1 to 1,
+    0 to 1,
+    1 to 1,
 )
 
 fun clamp(x: Int, min: Int, max: Int): Int =
-        if (x < min) min
-        else if (x > max) max
-        else x
+    if (x < min) min
+    else if (x > max) max
+    else x

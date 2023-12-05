@@ -1,11 +1,18 @@
 import kotlin.math.pow
 
-fun main() {
-    fun part1(input: List<String>): Int {
+fun main() = Day4().run()
+
+class Day4: Challenge<Int>(4) {
+    override val testResults = ExpectedTestInputResults(
+        part1 = 13,
+        part2 = 30,
+    )
+
+    override fun part1(input: List<String>): Int {
         return input.map(Card::from).sumOf { it.calculatePoints() }
     }
 
-    fun part2(input: List<String>): Int {
+    override fun part2(input: List<String>): Int {
         val count = Array(input.size) { 1 }
         val cards = input.map(Card::from)
         for ((i, card) in cards.withIndex()) {
@@ -15,14 +22,6 @@ fun main() {
         }
         return count.sum()
     }
-
-    val testInput = readInput("Day04_test")
-    check(part1(testInput) == 13)
-    check(part2(testInput) == 30)
-
-    val input = readInput("Day04")
-    part1(input).println()
-    part2(input).println()
 }
 
 fun Card.numberOfMatching(): Int {
@@ -52,6 +51,6 @@ data class Card(
         }
 
         private fun String.toIntegerList(): List<Int> =
-            trim().replace("\\s+".toRegex(), " ").split(" ").map { it.toInt() }
+            trim().split("\\s+".toRegex()).map { it.toInt() }
     }
 }

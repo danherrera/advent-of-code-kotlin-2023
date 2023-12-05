@@ -1,22 +1,29 @@
-fun main() {
-    fun part1(input: List<String>): Int {
+fun main() = Day2().run()
+
+class Day2 : Challenge<Int>(2) {
+    override val testResults = ExpectedTestInputResults(
+        part1 = 8,
+        part2 = 2286,
+    )
+
+    override fun part1(input: List<String>): Int {
         return input
-                .map { it.toGame() }
-                .filter { game ->
-                    game.rounds.all { round ->
-                        round.grabs.all { grab ->
-                            when (grab) {
-                                is Grab.Red -> grab.count <= 12
-                                is Grab.Green -> grab.count <= 13
-                                is Grab.Blue -> grab.count <= 14
-                            }
+            .map { it.toGame() }
+            .filter { game ->
+                game.rounds.all { round ->
+                    round.grabs.all { grab ->
+                        when (grab) {
+                            is Grab.Red -> grab.count <= 12
+                            is Grab.Green -> grab.count <= 13
+                            is Grab.Blue -> grab.count <= 14
                         }
                     }
                 }
-                .sumOf { it.id }
+            }
+            .sumOf { it.id }
     }
 
-    fun part2(input: List<String>): Int {
+    override fun part2(input: List<String>): Int {
         return input
             .map { it.toGame() }
             .map { game ->
@@ -33,36 +40,28 @@ fun main() {
                 minimumRed * minimumGreen * minimumBlue
             }
             .sum()
-        
     }
 
-    val testInput = readInput("Day02_test")
-    part1(testInput).println()
-    check(part1(testInput) == 8)
-
-    val input = readInput("Day02")
-    part1(input).println()
-    part2(input).println()
 }
 
 private fun String.toGame(): Game {
     val id = substring(5, indexOf(':')).toInt()
     val rounds = substring(indexOf(": ") + 2).split("; ")
-            .map { round ->
-                Round(round.split(", ").map { grab ->
-                    Grab.from(grab)
-                })
-            }
+        .map { round ->
+            Round(round.split(", ").map { grab ->
+                Grab.from(grab)
+            })
+        }
     return Game(id, rounds)
 }
 
 private data class Game(
-        val id: Int,
-        val rounds: List<Round>,
+    val id: Int,
+    val rounds: List<Round>,
 )
 
 private data class Round(
-        val grabs: List<Grab>,
+    val grabs: List<Grab>,
 )
 
 private sealed class Grab {

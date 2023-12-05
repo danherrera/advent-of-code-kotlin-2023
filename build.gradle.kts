@@ -13,3 +13,7 @@ tasks {
         gradleVersion = "8.5"
     }
 }
+
+dependencies {
+    implementation("io.kotest:kotest-assertions-core:5.8.0")
+}
