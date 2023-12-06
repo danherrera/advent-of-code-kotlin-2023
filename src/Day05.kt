@@ -1,20 +1,5 @@
 fun main() = Day5().run()
 
-typealias RangeMap = Map<LongRange, LongRange>
-typealias MutableRangeMap = MutableMap<LongRange, LongRange>
-typealias RangeEntry = Pair<LongRange, LongRange>
-
-private fun createRangeEntry(targetStart: Long, sourceStart: Long, length: Long): RangeEntry {
-    return (sourceStart until (sourceStart + length)) to (targetStart until (targetStart + length))
-}
-
-private fun findValue(x: Long, map: Map<LongRange, LongRange>): Long {
-    val sourceRange = map.keys.firstOrNull { x in it } ?: return x
-    val diff = x - sourceRange.min()
-    val targetRange = map[sourceRange]!!
-    return targetRange.min() + diff
-}
-
 class Day5 : Challenge<Long>(5) {
     override val testResults = ExpectedTestInputResults(
         part1 = 35L,
@@ -22,76 +7,117 @@ class Day5 : Challenge<Long>(5) {
     )
 
     override fun part1(input: List<String>): Long {
-        val almanac = Almanac.from(input)
-        var min = Long.MAX_VALUE
-
-        for (seed in almanac.seeds) {
-            almanac.maps.fold(seed) { acc, map ->
-                findValue(acc, map)
-            }.let {
-                min = minOf(min, it)
-            }
+        val almanac = AlmanacPart1.from(input)
+        return almanac.seeds.map { seed ->
+            almanac.categoryMappings.fold(seed, ::categoryMappingsTraversal)
         }
-        return min
+            .min()
     }
 
     override fun part2(input: List<String>): Long {
-        val almanac = Almanac.from(input)
-        var min = Long.MAX_VALUE
-        val ranges = almanac.seeds.chunked(2)
-            .map {
-                assert(it.size == 2)
-                it.first() until (it.first() + it.last())
-            }
-
-        for ((r, range) in ranges.withIndex()) {
-            "Range $r/${ranges.size}".println()
-            for ((s, seed) in range.withIndex()) {
-                "Seed $s/${range.last - range.first}".println()
-                almanac.maps.fold(seed) { acc, map ->
-                    findValue(acc, map)
-                }.let {
-                    min = minOf(min, it)
-                }
+        val almanac = AlmanacPart2.from(input)
+        for (location in 0..Long.MAX_VALUE) {
+            val potentialSeed = almanac.categoryMappings.fold(location, ::categoryMappingsTraversal)
+            val hasSeedInLocation = almanac.seedRanges.any { potentialSeed in it }
+            if (hasSeedInLocation) {
+                return location
             }
         }
-        return min
+        return -1L
     }
+
 }
 
-data class Almanac(
+private fun categoryMappingsTraversal(acc: Long, categoryMapping: CategoryMapping): Long {
+    val sourceRange = categoryMapping.sourceToTarget.keys
+        .firstOrNull { acc in it } ?: return acc
+    val delta = acc - sourceRange.first
+    val targetRange = categoryMapping.sourceToTarget[sourceRange]!!
+    return targetRange.first + delta
+}
+
+private data class AlmanacPart1(
     val seeds: List<Long>,
-    val maps: List<RangeMap>,
+    val categoryMappings: List<CategoryMapping>,
 ) {
     companion object {
+        fun from(input: List<String>): AlmanacPart1 {
+            val seeds = input.first().substringAfter(": ").split(" ")
+                .map { it.toLong() }
 
-        fun from(input: List<String>): Almanac {
-            val seeds = input.first().run {
-                substring(indexOf(' ') + 1).split(" ").map { it.toLong() }
-            }
-
-            val maps = mutableListOf<MutableRangeMap>()
-
-            var lineIndex = 3
-            var mapIndex = 0
-
-            while (lineIndex < input.size) {
-                while (lineIndex < input.size && input[lineIndex].isNotBlank()) {
-                    if (mapIndex == maps.size) maps.add(mutableMapOf())
-                    maps[mapIndex] += input[lineIndex].split(" ")
-                        .map { it.toLong() }
-                        .let { createRangeEntry(it[0], it[1], it[2]) }
-                    lineIndex++
+            val mappings = input.subList(2, input.size)
+                .joinToString("\n")
+                .split("\n\n")
+                .map { it.split("\n").drop(1) }
+                .map { rows ->
+                    rows.associate { row ->
+                        val rowData = row.split(" ")
+                            .map { it.toLong() }
+                        createRangeEntry(
+                            rowData[0],
+                            rowData[1],
+                            rowData[2],
+                        )
+                    }.let(::CategoryMapping)
                 }
-                maps[mapIndex].println()
-                mapIndex++
-                lineIndex += 2
-            }
-
-            return Almanac(
-                seeds = seeds,
-                maps = maps,
+            return AlmanacPart1(
+                seeds,
+                mappings,
             )
         }
     }
 }
+
+private data class AlmanacPart2(
+    val seedRanges: List<LongRange>,
+    val categoryMappings: List<CategoryMapping>,
+) {
+    companion object {
+        fun from(input: List<String>): AlmanacPart2 {
+            val seeds = input.first().substringAfter(": ").split(" ")
+                .map { it.toLong() }
+                .chunked(2)
+                .map { (rangeStart, rangeLength) ->
+                    rangeStart until (rangeStart + rangeLength)
+                }
+
+            val mappings = input.subList(2, input.size)
+                .joinToString("\n")
+                .split("\n\n")
+                .map { it.split("\n").drop(1) }
+                .map { rows ->
+                    rows.associate { row ->
+                        val rowData = row.split(" ")
+                            .map { it.toLong() }
+                        // reverse source and target to lookup seeds from location
+                        createRangeEntry(
+                            rowData[1],
+                            rowData[0],
+                            rowData[2],
+                        )
+                    }.let(::CategoryMapping)
+                }
+                .reversed() // reverse list to lookup starting with location
+            return AlmanacPart2(
+                seeds,
+                mappings,
+            )
+        }
+    }
+}
+
+private fun createRangeEntry(
+    targetStart: Long,
+    sourceStart: Long,
+    rangeLength: Long,
+): Pair<LongRange, LongRange> {
+    val range = { start: Long ->
+        start until (start + rangeLength)
+    }
+    return range(sourceStart) to range(targetStart)
+}
+
+// e.g. seed-to-soil, soil-to-fertilizer, etc.
+private data class CategoryMapping(
+    val sourceToTarget: Map<LongRange, LongRange>
+)
