@@ -18,11 +18,11 @@ abstract class Challenge<Output>(private val day: Int) {
             ?: testInput
 
         val input = readInput("Day${dayString}")
-//        withClue("Part 1 test results should match expectation") {
-//            part1(testInput) shouldBe testResults.part1
-//        }
-//        println("✅ Part 1 Test Input")
-//        "Part 1: ${part1(input)}".println()
+        withClue("Part 1 test results should match expectation") {
+            part1(testInput) shouldBe testResults.part1
+        }
+        println("✅ Part 1 Test Input")
+        "Part 1: ${part1(input)}".println()
         withClue("Part 2 test results should match expectation") {
             part2(testInput2) shouldBe testResults.part2
         }
