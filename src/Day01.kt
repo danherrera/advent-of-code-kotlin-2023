@@ -13,7 +13,6 @@ class Day1 : Challenge<Int>(1) {
     }
 
     override fun part2(input: List<String>): Int {
-        val maxTextDigitCharacterLength = 5
 
         val stringToDigit = mapOf(
             "one" to 1,
@@ -35,6 +34,8 @@ class Day1 : Challenge<Int>(1) {
             "8" to 8,
             "9" to 9,
         )
+
+        val maxTextDigitCharacterLength = stringToDigit.keys.maxOfOrNull { it.length }!!
 
         fun String.findFirstDigit(): Int {
             for (s in 0..length) {
