@@ -14,9 +14,9 @@ class Day3 : Challenge<Int>(3) {
         for ((r, row) in grid.withIndex()) {
             for ((c, char) in row.withIndex()) {
                 if (char !in '0'..'9' && char != '.') {
-                    for ((dY, dX) in moves) {
-                        val y = clamp(r + dY, 0, height - 1)
-                        val x = clamp(c + dX, 0, width - 1)
+                    for ((dY, dX) in all2DDirections) {
+                        val y = clamp(r + dY, 0 until height)
+                        val x = clamp(c + dX, 0 until width)
 
                         if (grid[y][x] in '0'..'9') {
                             var t = x
@@ -48,9 +48,9 @@ class Day3 : Challenge<Int>(3) {
                 if (char == '*') {
                     val adjacentPartNumbers = mutableListOf<Int>()
                     val visited = mutableSetOf<Pair<Int, Int>>()
-                    for ((dY, dX) in moves) {
-                        val y = clamp(r + dY, 0, height - 1)
-                        val x = clamp(c + dX, 0, width - 1)
+                    for ((dY, dX) in all2DDirections) {
+                        val y = clamp(r + dY, 0 until height)
+                        val x = clamp(c + dX, 0 until width)
                         if (y to x in visited || grid[y][x] !in '0'..'9') continue
                         visited.add(y to x)
                         var t = x
@@ -79,18 +79,3 @@ class Day3 : Challenge<Int>(3) {
 
 }
 
-val moves = listOf(
-    -1 to -1,
-    0 to -1,
-    1 to -1,
-    -1 to 0,
-    1 to 0,
-    -1 to 1,
-    0 to 1,
-    1 to 1,
-)
-
-fun clamp(x: Int, min: Int, max: Int): Int =
-    if (x < min) min
-    else if (x > max) max
-    else x
