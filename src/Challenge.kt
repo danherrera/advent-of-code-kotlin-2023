@@ -18,6 +18,11 @@ abstract class Challenge<Output>(private val day: Int) {
             ?: testInput
 
         val input = readInput("Day${dayString}")
+        """
+            =============
+               Day $dayString
+            =============
+        """.trimIndent().println()
         withClue("Part 1 test results should match expectation") {
             part1(testInput) shouldBe testResults.part1
         }
