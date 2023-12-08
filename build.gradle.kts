@@ -16,4 +16,5 @@ tasks {
 
 dependencies {
     implementation("io.kotest:kotest-assertions-core:5.8.0")
+    implementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }
