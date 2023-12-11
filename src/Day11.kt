@@ -2,7 +2,7 @@ fun main() = Day11().run()
 class Day11 : Challenge<Long>(11) {
     override val testResults = ExpectedTestInputResults<Long>(
             374L,
-            8410L,
+            82000210L,
     )
 
     override fun part1(input: List<String>): Long {
@@ -19,14 +19,16 @@ class Day11 : Challenge<Long>(11) {
         val universe = Universe.from(input)
         return universe.galaxyPairs.map { galaxyPair ->
             galaxyPair.distanceWithExpandedUniverse(
-                universe.rowsWithoutGalaxies,
-                universe.columnsWithoutGalaxies,
-                1_000_000
+                    universe.rowsWithoutGalaxies,
+                    universe.columnsWithoutGalaxies,
+                    1_000_000
             )
         }.sum()
     }
 
 }
+
+data class Dimensions(val rows: Long, val columns: Long)
 
 class Universe(
         val galaxyCoordinates: List<Pair<Int, Int>>,
@@ -86,9 +88,17 @@ data class GalaxyPair(
 
     val distance: Int = Math.abs(to.first - from.first) + Math.abs(to.second - from.second)
 
-    fun distanceWithExpandedUniverse(expandedRows: List<Int>, expandedColumns: List<Int>, multiplier: Long = 1): Long {
+    fun distanceWithExpandedUniverse(expandedRows: List<Int>, expandedColumns: List<Int>, multiplier: Long = 2): Long {
         return distance +
-                expandedRows.filter { it in minOf(from.first, to.first) until maxOf(from.first, to.first) }.size * multiplier +
-                expandedColumns.filter { it in minOf(from.second, to.second) until maxOf(from.second, to.second) }.size * multiplier
+               expandedRows.filter { it in minOf(from.first, to.first) until maxOf(from.first, to.first) }.size * (multiplier - 1) +
+               expandedColumns.filter { it in minOf(from.second, to.second) until maxOf(from.second, to.second) }.size * (multiplier - 1)
+    }
+
+    fun minDistanceWithExpandedUniverse(expandedRows: List<Int>, expandedColumns: List<Int>, multiplier: Long = 1): Long {
+        // x1,y1 to x2,y2
+        // 0-y1;y2-maxY
+        // y1-y2
+        return distance +
+                expandedRows.filter { it in minOf(from.first, to.first) until maxOf(from.first, to.first) }.size * multiplier + expandedColumns.filter { it in minOf(from.second, to.second) until maxOf(from.second, to.second) }.size * multiplier
     }
 }
