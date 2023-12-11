@@ -1,53 +1,63 @@
-/**
- * > 2723886885: [KQP, CQK, HNR, XTF, LXV, NTV]
- *  * [KQP, CQK, HNR, XTF, LXV, NTV]
- *  * [FGC, CQK, HNR, XTF, LXV, NTV]
- *  * [FGC, QQB, HNR, XTF, LXV, NTV]
- *  * [FGC, QQB, NJX, XTF, LXV, NTV]
- *  * [FGC, QQB, NJX, PJD, LXV, NTV]
- *  * [FGC, QQB, NJX, PJD, JGK, NTV]
- * > 2723886886: [FGC, QQB, NJX, PJD, JGK, QCL]
- *  * [FGC, QQB, NJX, PJD, JGK, QCL]
- *  * [BQN, QQB, NJX, PJD, JGK, QCL]
- *  * [BQN, SKR, NJX, PJD, JGK, QCL]
- *  * [BQN, SKR, PVL, PJD, JGK, QCL]
- *  * [BQN, SKR, PVL, STT, JGK, QCL]
- *  * [BQN, SKR, PVL, STT, QFK, QCL]
- * > 2723886887: [BQN, SKR, PVL, STT, QFK, QRS]
- *  * [BQN, SKR, PVL, STT, QFK, QRS]
- *  * [DPD, SKR, PVL, STT, QFK, QRS]
- *  * [DPD, GQL, PVL, STT, QFK, QRS]
- *  * [DPD, GQL, FJN, STT, QFK, QRS]
- *  * [DPD, GQL, FJN, FDB, QFK, QRS]
- *  * [DPD, GQL, FJN, FDB, QJL, QRS]
- * > 2723886888: [DPD, GQL, FJN, FDB, QJL, SKG]
- *  * [DPD, GQL, FJN, FDB, QJL, SKG]
- *  * [PKT, GQL, FJN, FDB, QJL, SKG]
- *  * [PKT, DQS, FJN, FDB, QJL, SKG]
- *  * [PKT, DQS, NTL, FDB, QJL, SKG]
- *  * [PKT, DQS, NTL, SCB, QJL, SKG]
- *  * [PKT, DQS, NTL, SCB, CRC, SKG]
- * > 2723886889: [PKT, DQS, NTL, SCB, CRC, KPD]
- */
-fun main() {
-    val map = ElfMap.from(mainInput.split("\n"))
-    var currentNodes = map.map.keys.filter { it.endsWith('A') }.toMutableList()
-    var steps = 0L
-    while (currentNodes.any { !it.endsWith('Z') }) {
-        val nextStepIndex = (steps % map.instruction.length).toInt()
-        val nextStep = map.instruction[nextStepIndex]
-        for ((i, currentNode) in currentNodes.withIndex()) {
-            println(" * $currentNodes")
-            currentNodes[i] = when (nextStep) {
+fun main() = Day8().run()
+
+class Day8 : Challenge<Long>(8) {
+    override val testResults = ExpectedTestInputResults<Long>(
+            2L,
+            6L,
+    )
+
+    override fun part1(input: List<String>): Long {
+        val map = ElfMap.from(input)
+        var currentNode = "AAA"
+        var steps = 0L
+        while (currentNode != "ZZZ") {
+            val nextStepIndex = (steps % map.instruction.length).toInt()
+            val nextStep = map.instruction[nextStepIndex]
+            currentNode = when (nextStep) {
                 'L' -> map.map[currentNode]!!.first
                 else -> map.map[currentNode]!!.second
             }
+            steps++
         }
-        println("> $steps: $currentNodes")
-        steps++
+        return steps
     }
-    println(steps)
+
+    override fun part2(input: List<String>): Long {
+        val map = ElfMap.from(input);
+        return map.map.keys.filter { it.endsWith('A') }
+                .map { startNode ->
+                    var currentNode = startNode
+                    var steps = 0L
+                    while (!currentNode.endsWith("Z")) {
+                        val nextStepIndex = (steps % map.instruction.length).toInt()
+                        val nextStep = map.instruction[nextStepIndex]
+                        currentNode = when (nextStep) {
+                            'L' -> map.map[currentNode]!!.first
+                            else -> map.map[currentNode]!!.second
+                        }
+                        steps++
+                    }
+                    steps
+                }
+                .reduce { acc, v ->
+                    lowest_common_multiplier(acc, v)
+                }
+    }
+
 }
+
+fun lowest_common_multiplier(a: Long, b: Long): Long {
+    var gcd = 1L
+    var i = 1L
+    while (i <= minOf(a, b)) {
+        if (a % i == 0L && b % i == 0L) {
+            gcd = i
+        }
+        i++
+    }
+    return (a * b) / gcd
+}
+
 fun part1() {
     val map = ElfMap.from(mainInput.split("\n"))
     var currentNode = "AAA"
@@ -63,31 +73,55 @@ fun part1() {
     }
     println(steps)
 }
+
+fun part2() {
+    val map = ElfMap.from(mainInput.split("\n"));
+    map.map.keys.filter { it.endsWith('A') }
+            .map { startNode ->
+                var currentNode = startNode
+                var steps = 0L
+                while (!currentNode.endsWith("Z")) {
+                    val nextStepIndex = (steps % map.instruction.length).toInt()
+                    val nextStep = map.instruction[nextStepIndex]
+                    currentNode = when (nextStep) {
+                        'L' -> map.map[currentNode]!!.first
+                        else -> map.map[currentNode]!!.second
+                    }
+                    steps++
+                }
+                steps
+            }
+            .reduce { acc, v ->
+                lowest_common_multiplier(acc, v)
+            }.println()
+}
 typealias LeftRightOption = Pair<String, String>
+
 data class ElfMap(
-    val instruction: String,
-    val map: Map<String, LeftRightOption>,
+        val instruction: String,
+        val map: Map<String, LeftRightOption>,
 ) {
     companion object {
         fun from(input: List<String>): ElfMap {
             return ElfMap(
-                input.first(),
-                input.drop(2)
-                    .map { stringEntry ->
-                        val entry = stringEntry.split(" = ")
-                        val start = entry.first()
-                        val destinations = entry.last()
-                            .substringAfter("(")
-                            .substringBefore(")")
-                            .split(", ")
-                            .let { it.first() to it.last() }
+                    input.first(),
+                    input.drop(2)
+                            .map { stringEntry ->
+                                val entry = stringEntry.split(" = ")
+                                val start = entry.first()
+                                val destinations = entry.last()
+                                        .substringAfter("(")
+                                        .substringBefore(")")
+                                        .split(", ")
+                                        .let { it.first() to it.last() }
 
-                        (start to destinations)
-                    }.toMap()
+                                (start to destinations)
+                            }.toMap()
             )
         }
     }
 }
+
 val test1 = """
 RL
 ​
