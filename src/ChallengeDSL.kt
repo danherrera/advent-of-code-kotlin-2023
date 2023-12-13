@@ -24,26 +24,28 @@ fun day(number: Int, f: DayContext.() -> Unit) {
 
 fun <I, O> DayContext.part(
         number: Int,
-        partInput: PartInput<*> = PartInput.AsListOfStrings(inputFileConfig.inputByLines),
-        samplePartInput: PartInput<*> = PartInput.AsListOfStrings(sampleInputFileConfig.inputByLines),
+        fileConfigPartInput: FileConfig.() -> PartInput<*> = { PartInput.AsListOfStrings(inputByLines) },
         f: PartContext<I, O>.(I) -> O,
 ) {
-    val ensuredSamplePartInput = (samplePartInput as? PartInput<I>) ?: run {
+    val ensuredSamplePartInput = (sampleInputFileConfig.fileConfigPartInput() as? PartInput<I>) ?: run {
         log("Please specify a valid/matching sample part input and type")
         return
     }
-    val ensuredPartInput = (partInput as? PartInput<I>) ?: run {
+    log("Checking part $number sample...")
+    val samplePartContext = PartContext<I, O>(number, isSample = true)
+    samplePartContext.dayContext = this
+    val sampleResult = samplePartContext.f(ensuredSamplePartInput.value)
+    samplePartContext.answer(sampleResult)
+
+    val ensuredPartInput = (inputFileConfig.fileConfigPartInput() as? PartInput<I>) ?: run {
         log("Please specify a valid/matching part input and type")
         return
     }
-    log("Checking part $number sample...")
-    PartContext<I, O>(number, isSample = true)
-            .also { it.dayContext = this }
-            .f(ensuredSamplePartInput.value)
     log("Checking part $number...")
-    PartContext<I, O>(number)
-            .also { it.dayContext = this }
-            .f(ensuredPartInput.value)
+    val partContext = PartContext<I, O>(number)
+    partContext.dayContext = this
+    val result = partContext.f(ensuredPartInput.value)
+    partContext.answer(result)
 }
 
 private fun log(message: String) = println(message)
@@ -53,6 +55,7 @@ class PartContext<I, O>(
         private val isSample: Boolean = false,
 ) {
     lateinit var dayContext: DayContext
+    var sampleFileConfig: FileConfig? = null
 
     private var expectation: O? = null
 

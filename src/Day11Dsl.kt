@@ -1,43 +1,36 @@
-fun main() = Day11().run()
-class Day11 : Challenge<Long>(11) {
-    override val testResults = ExpectedTestInputResults<Long>(
-            374L,
-            82000210L,
-    )
-
-    override fun part1(input: List<String>): Long {
-        val universe = Universe.from(input)
-        return universe.galaxyPairs.map { galaxyPair ->
+fun main() = day(11) {
+    part(1) { input ->
+        expect(sample = 374L)
+        val universe = Universe2.from(input)
+        universe.galaxyPairs.sumOf { galaxyPair ->
             galaxyPair.distanceWithExpandedUniverse(
                     universe.rowsWithoutGalaxies,
                     universe.columnsWithoutGalaxies,
             )
-        }.sum()
+        }
     }
 
-    override fun part2(input: List<String>): Long {
-        val universe = Universe.from(input)
-        return universe.galaxyPairs.map { galaxyPair ->
+    part(2) { input ->
+        val universe = Universe2.from(input)
+        expect(sample = 82000210L)
+        universe.galaxyPairs.sumOf { galaxyPair ->
             galaxyPair.distanceWithExpandedUniverse(
                     universe.rowsWithoutGalaxies,
                     universe.columnsWithoutGalaxies,
                     1_000_000
             )
-        }.sum()
+        }
     }
-
 }
 
-data class Dimensions(val rows: Long, val columns: Long)
-
-private class Universe(
+private class Universe2(
         val galaxyCoordinates: List<Pair<Int, Int>>,
         val rowsWithoutGalaxies: List<Int>,
         val columnsWithoutGalaxies: List<Int>,
-        val galaxyPairs: Set<GalaxyPair>,
+        val galaxyPairs: Set<GalaxyPair2>,
 ) {
     companion object {
-        fun from(input: List<String>): Universe {
+        fun from(input: List<String>): Universe2 {
             val rowsWithoutGalaxies = MutableList<Int>(input.size) { it }
             val columnsWithoutGalaxies = MutableList<Int>(input.first().length) { it }
             return input.flatMapIndexed { r, row ->
@@ -53,13 +46,13 @@ private class Universe(
                     }
                 }
             }.let { galaxyCoordinates ->
-                Universe(
+                Universe2(
                         galaxyCoordinates,
                         rowsWithoutGalaxies,
                         columnsWithoutGalaxies,
                         galaxyCoordinates.flatMap { a ->
                             galaxyCoordinates.mapNotNull { b ->
-                                GalaxyPair.from(a, b)
+                                GalaxyPair2.from(a, b)
                             }
                         }.toSet()
                 )
@@ -68,12 +61,12 @@ private class Universe(
     }
 }
 
-private data class GalaxyPair(
+private data class GalaxyPair2(
         val from: Pair<Int, Int>,
         val to: Pair<Int, Int>,
 ) {
     companion object {
-        fun from(a: Pair<Int, Int>, b: Pair<Int, Int>): GalaxyPair? {
+        fun from(a: Pair<Int, Int>, b: Pair<Int, Int>): GalaxyPair2? {
             return when {
                 a.first < b.first -> a to b
                 b.first < a.first -> b to a
@@ -81,7 +74,7 @@ private data class GalaxyPair(
                 b.second < a.second -> b to a
                 else -> null // same coordinate
             }?.let { (from, to) ->
-                GalaxyPair(from, to)
+                GalaxyPair2(from, to)
             }
         }
     }
@@ -92,13 +85,5 @@ private data class GalaxyPair(
         return distance +
                 expandedRows.filter { it in minOf(from.first, to.first) until maxOf(from.first, to.first) }.size * (multiplier - 1) +
                 expandedColumns.filter { it in minOf(from.second, to.second) until maxOf(from.second, to.second) }.size * (multiplier - 1)
-    }
-
-    fun minDistanceWithExpandedUniverse(expandedRows: List<Int>, expandedColumns: List<Int>, multiplier: Long = 1): Long {
-        // x1,y1 to x2,y2
-        // 0-y1;y2-maxY
-        // y1-y2
-        return distance +
-                expandedRows.filter { it in minOf(from.first, to.first) until maxOf(from.first, to.first) }.size * multiplier + expandedColumns.filter { it in minOf(from.second, to.second) until maxOf(from.second, to.second) }.size * multiplier
     }
 }

@@ -13,9 +13,9 @@ abstract class Challenge<Output>(private val day: Int) {
 
         val testInput = readInput("Day${dayString}_test")
         val testInput2 = runCatching { readInput("Day${dayString}_test2") }
-            .getOrDefault(testInput)
-            .takeIf { it.isNotEmpty() }
-            ?: testInput
+                .getOrDefault(testInput)
+                .takeIf { it.isNotEmpty() }
+                ?: testInput
 
         val input = readInput("Day${dayString}")
         """
@@ -23,20 +23,23 @@ abstract class Challenge<Output>(private val day: Int) {
                Day $dayString
             =============
         """.trimIndent().println()
+        val part1TestResult = part1(testInput)
         withClue("Part 1 test results should match expectation") {
-            part1(testInput) shouldBe testResults.part1
+            part1TestResult shouldBe testResults.part1
         }
-        println("✅ Part 1 Test Input")
+        println("✅ Part 1 Test Input: $part1TestResult")
         "Part 1: ${part1(input)}".println()
+
+        val part2TestResult = part2(testInput2)
         withClue("Part 2 test results should match expectation") {
-            part2(testInput2) shouldBe testResults.part2
+            part2TestResult shouldBe testResults.part2
         }
-        println("✅ Part 2 Test Input")
+        println("✅ Part 2 Test Input: $part2TestResult")
         "Part 2: ${part2(input)}".println()
     }
 }
 
 data class ExpectedTestInputResults<Output>(
-    val part1: Output,
-    val part2: Output,
+        val part1: Output,
+        val part2: Output,
 )
