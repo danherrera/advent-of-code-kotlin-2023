@@ -58,7 +58,7 @@ fun lowest_common_multiplier(a: Long, b: Long): Long {
     return (a * b) / gcd
 }
 
-fun part1() {
+private fun part1() {
     val map = ElfMap.from(mainInput.split("\n"))
     var currentNode = "AAA"
     var steps = 0
@@ -74,7 +74,7 @@ fun part1() {
     println(steps)
 }
 
-fun part2() {
+private fun part2() {
     val map = ElfMap.from(mainInput.split("\n"));
     map.map.keys.filter { it.endsWith('A') }
             .map { startNode ->
